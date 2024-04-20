@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import os
 import sqlite3
 
-from data.data import init_database_tables, update_database
+from marketTracker.data import init_database_tables, update_database
 
 load_dotenv()
 

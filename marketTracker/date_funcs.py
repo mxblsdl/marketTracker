@@ -12,9 +12,9 @@ def get_today():
     return datetime.datetime.today().strftime("%Y%m%d")
 
 
-def months_back(month: str) -> str:
+def months_back(month: int) -> str:
     today = datetime.datetime.today()
-    past_month = today.month - month
+    past_month = int(today.month) - int(month)
     if past_month > 0:
         return today.replace(month=past_month, year=today.year).strftime("%Y%m%d")
 

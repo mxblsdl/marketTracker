@@ -3,15 +3,21 @@ import datetime
 import time
 import math
 from polygon import RESTClient
-from data.date_funcs import get_dates
+from marketTracker.date_funcs import get_dates
 
-def sql_execute(con: sqlite3.Connection, sql: str) -> None:
+
+def sql_execute(con: sqlite3.Connection, sql: str, params=None) -> None:
     """Initialize data and funds table
 
     Args:
         name (str): _description_
     """
     cur = con.cursor()
+
+    if params is not None:
+        cur.execute(sql, params)
+        return cur.fetchall()
+
     cur.execute(sql)
     return cur.fetchall()
 
@@ -75,7 +81,9 @@ def update_database(
     # Calculate time
     count = 0
     if len(tickers) > 5:
-        print(f"Data update will take about {math.floor(len(tickers) / 5)} minutes")
+        mins = math.floor(len(tickers) / 5)
+        unit = "minute" if mins == 1 else "minutes"
+        print(f"Data update will take about {mins} {unit}")
 
     # Retrieve today and 2 years ago
     start, end = get_dates()
