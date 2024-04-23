@@ -1,5 +1,4 @@
-from shiny import App, Inputs, Outputs, Session, reactive, render, ui
-import pandas as pd
+from shiny import App, Inputs, Outputs, Session, reactive, render, ui, req
 import plotnine as pn
 from marketTracker.view import (
     get_tickers,
@@ -7,15 +6,25 @@ from marketTracker.view import (
     get_data_range,
     date_range,
 )
-import sqlite3
+from marketTracker.data import update_database
+from dotenv import load_dotenv
 
+import sqlite3
+from datetime import datetime
+
+load_dotenv()
+
+tickers = ["VWO", "VEA", "SCHB", "ESGV", "VTI", "BNDX", "BND"]
 con = sqlite3.connect("funds.db")
+today = datetime.today().date()
+
+update_database(con, tickers, today)
 
 
 app_ui = ui.page_sidebar(
     ui.sidebar(
         ui.input_checkbox_group(
-            id="ticks", label="Choose Tickers", choices=get_tickers(con)
+                id="ticks", label="Choose Tickers", choices=get_tickers(con)
         ),
         ui.input_radio_buttons(
             id="timespan",
@@ -43,18 +52,19 @@ app_ui = ui.page_sidebar(
 
 def server(input: Inputs, output: Outputs, session: Session):
 
-    # TODO put dates as reactive
     @reactive.calc
     def ticker_data():
         today, past = dates()
         return get_data_range(con, input.ticks(), today, past)
 
+    @reactive.event(input.timespan, input.update)
     @reactive.calc
     def dates():
         return date_range(con, int(input.timespan()))
 
     @render.plot
     def plots():
+        req(input.ticks())
         interval = {
             1: "1 days",
             2: "2 days",
@@ -78,7 +88,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     @render.text
     def title():
         today, _ = dates()
-        return f"Market Tracker: Data last updated {today}"
+        return f"Market Tracker: Data last updated {datetime.strptime(today, "%Y%m%d").date()}"
 
     @render.text
     def info():

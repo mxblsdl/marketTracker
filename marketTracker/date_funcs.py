@@ -33,5 +33,15 @@ def add_day(date: str) -> str:
 
 
 def subtract_day(date: str) -> str:
+    if date.__class__ in [datetime.date, datetime.datetime]:
+        return date + datetime.timedelta(days=-1)
+
     new_date = datetime.datetime.strptime(date, "%Y%m%d") + datetime.timedelta(days=-1)
     return new_date.strftime("%Y%m%d")
+
+
+def last_weekday(date: datetime.date) -> datetime.date:
+    # This doesnt take into account holidays...
+    while date.weekday() >= 5:
+        date = subtract_day(date)
+    return date
