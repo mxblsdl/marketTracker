@@ -10,11 +10,12 @@ from marketTracker.data import update_database
 from dotenv import load_dotenv
 
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 
 load_dotenv()
 
 tickers = ["VWO", "VEA", "SCHB", "ESGV", "VTI", "BNDX", "BND"]
+# tickers = ["VWO"]
 con = sqlite3.connect("funds.db")
 today = datetime.today().date()
 
@@ -57,8 +58,8 @@ def server(input: Inputs, output: Outputs, session: Session):
         today, past = dates()
         return get_data_range(con, input.ticks(), today, past)
 
-    @reactive.event(input.timespan, input.update)
     @reactive.calc
+    @reactive.event(input.timespan, input.ticks)
     def dates():
         return date_range(con, int(input.timespan()))
 
@@ -88,7 +89,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     @render.text
     def title():
         today, _ = dates()
-        return f"Market Tracker: Data last updated {datetime.strptime(today, "%Y%m%d").date()}"
+        return f"Market Tracker: Data last updated {datetime.strptime(today, "%Y%m%d").date() - timedelta(days=1)}"
 
     @render.text
     def info():
@@ -100,9 +101,8 @@ def server(input: Inputs, output: Outputs, session: Session):
         tags = []
         for t in input.ticks():
             c = calc_percent_change(con, t, today, past)
-
             tags.append(
-                ui.card(str(c.iat[-1, 0]), " Percent Change ", str(c.iat[-1, 2]))
+                ui.card(c[0], " Percent Change ", str(c[2]))
             )
         return ui.TagList(tags)
 
