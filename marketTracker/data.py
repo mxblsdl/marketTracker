@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime
 from marketTracker.date_funcs import last_weekday
 import requests
 import os

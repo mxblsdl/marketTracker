@@ -1,24 +1,24 @@
 from shiny import App, Inputs, Outputs, Session, reactive, render, ui, req
 import plotnine as pn
+from dotenv import load_dotenv
+import sqlite3
+from datetime import datetime, timedelta
+
 from marketTracker.view import (
     get_tickers,
     calc_percent_change,
-    get_data_range,
+    get_data_for_date_range,
     date_range,
 )
 from marketTracker.data import update_database
-from dotenv import load_dotenv
-
-import sqlite3
-from datetime import datetime, timedelta
 
 load_dotenv()
 
 tickers = ["VWO", "VEA", "SCHB", "ESGV", "VTI", "BNDX", "BND"]
-# tickers = ["VWO"]
 con = sqlite3.connect("funds.db")
 today = datetime.today().date()
 
+# Update database on load if data is out of date
 update_database(con, tickers, today)
 
 
@@ -56,7 +56,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     @reactive.calc
     def ticker_data():
         today, past = dates()
-        return get_data_range(con, input.ticks(), today, past)
+        return get_data_for_date_range(con, input.ticks(), today, past)
 
     @reactive.calc
     @reactive.event(input.timespan, input.ticks)

@@ -1,6 +1,3 @@
-# import sys
-# sys.path.insert(0, './')
-
 import sqlite3
 from marketTracker.date_funcs import months_back, add_day, get_today, subtract_day
 from marketTracker.data import sql_execute
@@ -94,9 +91,20 @@ def calc_percent_change(
     return res[0]
 
 
-def get_data_range(
+def get_data_for_date_range(
     con: sqlite3.Connection, tickers: tuple[str], today: str, past: str
 ) -> pd.DataFrame:
+    """Retrieve data for a given date range and given stock symbols
+
+    Args:
+        con (sqlite3.Connection): sqlite3 connection to funds table
+        tickers (tuple[str]): Stock symbols
+        today (str): todays date
+        past (str): ending date in the past
+
+    Returns:
+        pd.DataFrame: pandas dataframe of the daily stock closing values
+    """
     if all([t not in get_tickers(con) for t in tickers]):
         print("1 or more tickers not found in data")
         return
