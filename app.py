@@ -46,6 +46,7 @@ app_ui = ui.page_sidebar(
         ui.column(4, ui.output_ui("tickers", fillable=False, fill=True)),
         ui.column(8, ui.output_plot("plots", height="90vh")),
     ),
+    fillable=True,
     window_title="Market Tracker",
     title=ui.output_text("title"),
 )
@@ -53,11 +54,13 @@ app_ui = ui.page_sidebar(
 
 def server(input: Inputs, output: Outputs, session: Session):
 
+    # Main data used for charts
     @reactive.calc
     def ticker_data():
         today, past = dates()
         return get_data_for_date_range(con, input.ticks(), today, past)
 
+    # Selected date range 
     @reactive.calc
     @reactive.event(input.timespan, input.ticks)
     def dates():
@@ -108,4 +111,5 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 
 app = App(app_ui, server)
+# Close database connection when server stops
 app.on_shutdown(con.close)
