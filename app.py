@@ -1,4 +1,5 @@
 from shiny import App, Inputs, Outputs, Session, reactive, render, ui, req
+
 import plotnine as pn
 from dotenv import load_dotenv
 import sqlite3
@@ -25,7 +26,7 @@ update_database(con, tickers, today)
 app_ui = ui.page_sidebar(
     ui.sidebar(
         ui.input_checkbox_group(
-                id="ticks", label="Choose Tickers", choices=get_tickers(con)
+            id="ticks", label="Choose Tickers", choices=get_tickers(con)
         ),
         ui.input_radio_buttons(
             id="timespan",
@@ -60,7 +61,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         today, past = dates()
         return get_data_for_date_range(con, input.ticks(), today, past)
 
-    # Selected date range 
+    # Selected date range
     @reactive.calc
     @reactive.event(input.timespan, input.ticks)
     def dates():
@@ -92,7 +93,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     @render.text
     def title():
         today, _ = dates()
-        return f"Market Tracker: Data last updated {datetime.strptime(today, "%Y%m%d").date() - timedelta(days=1)}"
+        return f"Market Tracker: Data last updated {datetime.strptime(today, '%Y%m%d').date() - timedelta(days=1)}"
 
     @render.text
     def info():
@@ -104,9 +105,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         tags = []
         for t in input.ticks():
             c = calc_percent_change(con, t, today, past)
-            tags.append(
-                ui.card(c[0], " Percent Change ", str(c[2]))
-            )
+            tags.append(ui.card(c[0], " Percent Change ", str(c[2])))
         return ui.TagList(tags)
 
 
