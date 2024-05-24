@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from marketTracker.date_funcs import last_weekday
 import requests
 import os
@@ -135,6 +135,9 @@ def update_database(
     """
     last_data = last_weekday(today)
     last_data_db = max_date(con)
+    if last_data_db == today:
+        last_data_db = last_data_db - timedelta(days=1)
+
     if last_data == last_data_db:
         print("Data is current. No processing will occur")
         return

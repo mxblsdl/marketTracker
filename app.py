@@ -26,7 +26,7 @@ update_database(con, tickers, today)
 app_ui = ui.page_sidebar(
     ui.sidebar(
         ui.input_checkbox_group(
-            id="ticks", label="Choose Tickers", choices=get_tickers(con)
+            id="ticks", label="Choose Tickers", choices=get_tickers(con), selected="BND"
         ),
         ui.input_radio_buttons(
             id="timespan",
@@ -38,6 +38,8 @@ app_ui = ui.page_sidebar(
                 6: "6 months",
                 12: "1 year",
                 24: "2 years",
+                60: "5 years",
+                120: "10 years",
             },
             selected=3,
         ),
@@ -77,6 +79,8 @@ def server(input: Inputs, output: Outputs, session: Session):
             6: "6 days",
             12: "12 days",
             24: "24 days",
+            60: "60 days",
+            120: "120 days",
         }
         breaks = interval[int(input.timespan())]
 
@@ -88,6 +92,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             + pn.theme_minimal()
             + pn.theme(axis_text_x=pn.element_text(rotation=45, hjust=1))
             + pn.scale_x_datetime(name="Date", date_breaks=breaks)
+            + pn.scale_y_continuous(name="Close Value")
         )
 
     @render.text
