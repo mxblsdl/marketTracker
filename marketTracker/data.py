@@ -1,8 +1,7 @@
 import sqlite3
 from datetime import datetime, timedelta
 from marketTracker.date_funcs import last_weekday
-import requests
-import os
+from marketTracker.mutual import add_mutual_fund_data
 
 
 def sql_execute(con: sqlite3.Connection, sql: str, params=None) -> tuple:
@@ -28,22 +27,6 @@ def sql_execute(con: sqlite3.Connection, sql: str, params=None) -> tuple:
     return cur.fetchall()
 
 
-def sql_executemany(con: sqlite3.Connection, sql: str, data: list[tuple]) -> None:
-    """execute many from a connection.
-
-    Args:
-        con (sqlite3.Connection): sqlite3 connection
-        sql (str): sql statement. Intented for INSERT statements
-        data (list[tuple]): data to insert
-    """
-    cur = con.cursor()
-    cur.executemany(
-        sql,
-        data,
-    )
-    con.commit()
-
-
 def init_database_table(con: sqlite3.Connection) -> None:
     """Initialize data table. Drops all values and recreates table
 
@@ -63,46 +46,6 @@ def init_database_table(con: sqlite3.Connection) -> None:
         )
         """
     sql_execute(con, sql)
-
-
-def get_time_series_daily(
-    ticker: str,
-    func: str = "TIME_SERIES_DAILY",
-    output: str = "compact",
-    api_key: str = os.getenv("APIKEY"),
-) -> list:
-    """Retrieve time series data of stocks
-
-    Args:
-        ticker (str): Ticker symbol for stock
-        func (str, optional): What type of data to retrieve.
-        Consult API documenation for further options.
-        https://www.alphavantage.co/documentation/#dailyadj
-        Defaults to "TIME_SERIES_DAILY".
-        output (str, optional): Format for the output data. Compact returns the last 100 data points
-        While full returns all historical data. Defaults to "compact".
-        api_key (str, optional): API Key for alphavantage API. Defaults to os.getenv("APIKEY").
-
-    Returns:
-        list: symbol, date, open, close values
-    """
-    url = f"https://www.alphavantage.co/query?function={func}&outputsize={output}&symbol={ticker}&apikey={api_key}"
-    r = requests.get(url)
-    if r.status_code != 200:
-        print("Error with API call")
-        print(r.reason)
-        return
-
-    data = r.json()
-
-    output = [
-        [data["Meta Data"]["2. Symbol"]]
-        + [k.replace("-", "")]
-        + [v["1. open"]]
-        + [v["4. close"]]
-        for k, v in data["Time Series (Daily)"].items()
-    ]
-    return output
 
 
 def max_date(con: sqlite3.Connection) -> datetime.date:
@@ -146,9 +89,4 @@ def update_database(
     # TODO write to a temp table then migrate
     init_database_table(con)
 
-    for tick in tickers:
-        res = get_time_series_daily(
-            ticker=tick, output="full", api_key=os.getenv("APIKEY")
-        )
-        sql = "INSERT INTO funds VALUES(?, ?, ?, ?)"
-        sql_executemany(con, sql, res)
+    add_mutual_fund_data(con, tickers)

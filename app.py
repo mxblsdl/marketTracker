@@ -15,7 +15,19 @@ from marketTracker.data import update_database
 
 load_dotenv()
 
-tickers = ["VWO", "VEA", "SCHB", "ESGV", "VTI", "BNDX", "BND"]
+tickers = [
+    "VWO",
+    "VEA",
+    "SCHB",
+    "ESGV",
+    "VTI",
+    "BNDX",
+    "BND",
+    "VTSAX",
+    "VASGX",
+    "VTIVX",
+]
+
 con = sqlite3.connect("funds.db")
 today = datetime.today().date()
 
