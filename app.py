@@ -1,7 +1,6 @@
 from shiny import App, Inputs, Outputs, Session, reactive, render, ui, req
 
 import plotnine as pn
-from dotenv import load_dotenv
 import sqlite3
 from datetime import datetime, timedelta
 
@@ -12,8 +11,6 @@ from marketTracker.view import (
     date_range,
 )
 from marketTracker.data import update_database
-
-load_dotenv()
 
 tickers = [
     "VWO",
